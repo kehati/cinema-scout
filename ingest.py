@@ -1,9 +1,18 @@
 import os
+import time
+import logging
 import feedparser
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import chromadb
+
+# Set up standard logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # 1. Load Environment Variables (.env file)
 load_dotenv()
@@ -24,7 +33,7 @@ RSS_FEEDS = [
 embedding_function = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 # 3. Connect to the ChromaDB Thin Client
-print(f"Connecting to ChromaDB at {CHROMA_HOST}:{CHROMA_PORT}...")
+logger.info(f"Connecting to ChromaDB at {CHROMA_HOST}:{CHROMA_PORT}...")
 chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
 collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
@@ -38,7 +47,7 @@ def fetch_and_process_feeds():
 
     # --- DELTA INGESTION LOGIC ---
     # Fetch existing links to prevent duplicate embedding costs
-    print("Fetching existing database records...")
+    logger.info("Fetching existing database records...")
     existing_data = collection.get(include=["metadatas"])
     seen_links = set()
 
@@ -47,12 +56,12 @@ def fetch_and_process_feeds():
             if meta and "link" in meta:
                 seen_links.add(meta["link"])
 
-    print(f"Database currently holds {len(seen_links)} unique articles.")
-    print("Checking RSS feeds for new content...\n")
+    logger.info(f"Database currently holds {len(seen_links)} unique articles.")
+    logger.info("Checking RSS feeds for new content...\n")
 
     # --- FETCH AND CHUNK NEW FEEDS ---
     for feed_url in RSS_FEEDS:
-        print(f"Polling: {feed_url}")
+        logger.info(f"Polling: {feed_url}")
         feed = feedparser.parse(feed_url)
         new_entries_count = 0
 
@@ -80,24 +89,31 @@ def fetch_and_process_feeds():
             new_entries_count += 1
             seen_links.add(link)  # Add to seen links so we don't process duplicates within the same run
 
-        print(f"  -> Found {new_entries_count} new articles.")
+        logger.info(f"  -> Found {new_entries_count} new articles.")
 
     # --- EMBED AND STORE ---
     if documents:
-        print(f"\nSending {len(documents)} new text chunks to Google for vectorization...")
+        logger.info(f"\nSending {len(documents)} new text chunks to Google for vectorization...")
         embeddings = embedding_function.embed_documents(documents)
 
-        print("Saving to ChromaDB...")
+        logger.info("Saving to ChromaDB...")
         collection.upsert(
             embeddings=embeddings,
             documents=documents,
             metadatas=metadatas,
             ids=ids
         )
-        print("Ingestion complete. Database is up to date!")
+        logger.info("Ingestion complete. Database is up to date!")
     else:
-        print("\nNo new articles found. Database is up to date!")
+        logger.info("\nNo new articles found. Database is up to date!")
 
 
 if __name__ == "__main__":
-    fetch_and_process_feeds()
+    while True:
+        try:
+            fetch_and_process_feeds()
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+
+        logger.info("Sleeping for 1 hour...")
+        time.sleep(3600)  # Sleep for 3600 seconds
