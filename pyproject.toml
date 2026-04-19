@@ -5,9 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
     "chromadb-client>=1.5.7",
     "feedparser>=6.0.12",
+    "google-generativeai>=0.8.6",
     "langchain>=1.2.15",
+    "langchain-classic>=1.0.3",
+    "langchain-community>=0.4.1",
+    "langchain-core>=1.2.29",
     "langchain-google-genai>=4.2.1",
     "langchain-text-splitters>=1.1.1",
     "python-dotenv>=1.2.2",
