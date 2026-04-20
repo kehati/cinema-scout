@@ -6,7 +6,7 @@
 ![LangChain](https://img.shields.io/badge/LangChain-Integration-green)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 
-**Cinema Scout** is an autonomous, Agentic AI media assistant designed to bridge the gap between film discovery and automated homelab media management. By combining Retrieval-Augmented Generation (RAG) with local services like [Overseerr/Seerr](https://docs.overseerr.dev/), [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/), it acts as both a knowledgeable film critic and an automated media requester.
+**Cinema Scout** is an autonomous, Agentic AI media assistant designed to bridge the gap between film discovery and automated homelab media management. By combining Retrieval-Augmented Generation (RAG) with local services like [Seerr](https://seerr.dev/), [Radarr](https://radarr.video/), and [Sonarr](https://sonarr.tv/), it acts as both a knowledgeable film critic and an automated media requester.
 
 ## Motivation
 
@@ -83,7 +83,7 @@ This project utilizes standard Docker Compose for orchestration, making it agnos
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/cinema-scout.git](https://github.com/yourusername/cinema-scout.git)
+   git clone https://github.com/yourusername/cinema-scout.git
    cd cinema-scout
    ```
 2. Create your `.env` file in the root directory and populate it with the variables listed in the Configuration section.
@@ -98,7 +98,7 @@ docker compose up -d --build
 
 ### Accessing the Services
 * **Chat UI:** `http://localhost:8501` (or your server's IP)
-* **Agent API Docs:** `http://localhost:8000/docs` (FastAPI automatically generates and hosts interactive Swagger documentation at this endpoint)
+* **Agent API Docs:** `http://localhost:8000/docs`
 
 ## API Documentation
 
